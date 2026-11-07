@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-ink: #0E2A47;        /* brand navy: primary actions, headings */
+  --color-ink-hover: #163A60;
+  --color-deep: #0A1F36;       /* auth panel, app header accents */
+  --color-steel: #5D7A99;      /* secondary text, accent */
+  --color-steel-light: #A9BCD0;
+  --color-mist: #F4F6F9;       /* app background */
+  --color-line: #DCE2EA;       /* borders */
+  --color-body: #26364A;       /* body text */
+  --color-muted: #5E6B7C;      /* helper text (AA on white and mist) */
+  --color-ok: #1F7A4D;
+  --color-ok-bg: #E8F4EE;
+  --color-bad: #B42318;
+  --color-bad-bg: #FDECEA;
+  --color-info-bg: #EAF0F7;
+
+  --radius-control: 8px;
+  --radius-panel: 14px;
+}
+
+@layer base {
+  html { color: var(--color-body); background: var(--color-mist); -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--font-sans); font-size: 15px; line-height: 1.55; }
+  h1, h2, h3 { color: var(--color-ink); letter-spacing: -0.015em; line-height: 1.2; font-weight: 600; }
+  ::selection { background: #C9D7E8; }
+  :focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+}
+
+/* The one orchestrated motion moment: the journey track fills on the auth pages */
+@keyframes track-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes step-on { from { background: transparent; color: var(--color-steel-light); } to { background: #fff; color: var(--color-deep); } }
+.track-fill { transform-origin: top; animation: track-fill 1.6s cubic-bezier(.65,0,.35,1) .3s both; }
+.step-on { animation: step-on .35s ease-out both; }

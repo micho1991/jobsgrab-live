@@ -1,0 +1,6 @@
+.expo/
+dist-native/
+dist-web/
+.env
+ios/
+android/

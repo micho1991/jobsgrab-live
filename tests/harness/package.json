@@ -1,0 +1,12 @@
+{
+  "name": "@hr/test-harness",
+  "private": true,
+  "description": "Local stand-in for Supabase used by the end-to-end tests (see README).",
+  "dependencies": {
+    "@sparticuz/chromium": "131.0.1",
+    "busboy": "1.6.0",
+    "deno": "2.9.6",
+    "pg": "8.13.1",
+    "puppeteer-core": "23.11.1"
+  }
+}

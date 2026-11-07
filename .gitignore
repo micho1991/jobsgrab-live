@@ -1,0 +1,12 @@
+node_modules/
+.next/
+dist/
+.expo/
+.turbo/
+*.log
+.env
+.env.*
+!.env.example
+supabase/.temp/
+supabase/functions/.env
+deno.lock

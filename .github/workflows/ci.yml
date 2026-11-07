@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Type check and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4          # version comes from "packageManager" in package.json
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Type check
+        run: |
+          pnpm --filter @hr/shared typecheck
+          pnpm --filter @hr/web typecheck
+          pnpm --filter @hr/mobile typecheck
+      - name: Build web app
+        run: pnpm --filter @hr/web build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      - name: Compile iOS and Android bundles
+        working-directory: apps/mobile
+        run: npx expo export --platform ios --platform android --output-dir dist-native
+        env:
+          CI: 1
+          EXPO_OFFLINE: 1
+          EXPO_PUBLIC_SUPABASE_URL: http://localhost:54321
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
+
+  tests:
+    name: Database and end-to-end tests
+    runs-on: ubuntu-24.04                    # ships PostgreSQL 16 and Google Chrome
+    timeout-minutes: 45
+    env:
+      HARNESS: /tmp/sb
+      CHROME_PATH: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Set up test backend (Supabase Auth, PostgREST, Postgres, Deno)
+        run: tests/harness/setup.sh
+      - run: tests/harness/start.sh
+      - name: Build and start web app
+        run: tests/harness/web.sh
+      - name: Export mobile app for the browser
+        run: tests/harness/mobile.sh
+      - name: Run all suites
+        run: tests/harness/run-all.sh
+      - name: Upload logs and screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: |
+            /tmp/sb/*.log
+            /tmp/sb/shots/
+          retention-days: 7
